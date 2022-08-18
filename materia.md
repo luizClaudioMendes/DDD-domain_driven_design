@@ -48,6 +48,12 @@ terminado em
     - [Para saber mais: Shared Kernel](#para-saber-mais-shared-kernel)
     - [Ouvintes independentes](#ouvintes-independentes)
     - [Utilização dos contextos](#utilização-dos-contextos)
+    - [O que aprendemos?](#o-que-aprendemos-3)
+  - [Camada anticorrupção](#camada-anticorrupção)
+    - [Sistemas distribuídos](#sistemas-distribuídos)
+    - [Camada Anticorrupção](#camada-anticorrupção)
+    - [Para saber mais: Referências](#para-saber-mais-referências)
+    - [O que aprendemos?](#o-que-aprendemos-4)
 
 
 # Java e Domain Driven Design: apresentando os conceitos
@@ -1899,3 +1905,208 @@ Esse tipo de arquitetura, que é bem comum hoje em dia, vai ser muito natural e 
 
 Porque isso favorece não só a manutenção, mas a evolução, a extração do código para projetos e microsserviços separados. 
 
+MatricularAlunoPorLinhaDeComando
+```
+public class MatricularAlunoPorLinhaDeComando {
+	
+	public static void main(String[] args) {
+		String nome = "Fulano da Silva";
+		String cpf = "123.456.789-00";
+		String email = "fulano@email.com";
+
+		PublicadorDeEventos publicador = new PublicadorDeEventos();
+		publicador.adicionar(new LogDeAlunoMatriculado());
+		publicador.adicionar(new GeraSeloAlunoNovato(new RepositorioDeSelosEmMemoria()));
+		MatricularAluno matricular = new MatricularAluno(new RepositorioDeAlunosEmMemoria(), publicador);
+		matricular.executa(
+				new MatricularAlunoDto(nome, 
+						cpf, 
+						email));
+	}
+
+}
+```
+
+### O que aprendemos?
+* Entendemos que os contextos devem ser independentes, mas precisam se comunicar de alguma forma;
+* Conhecemos o conceito de Shared Kernel, e vimos que há vantagens e desvantagens;
+* Utilizamos eventos de domínio para realizar parte da comunicação entre contextos;
+* Vimos que cada contexto pode fornecer seus Use Cases de forma independente.
+
+## Camada anticorrupção
+### Sistemas distribuídos
+Nós temos o projeto, que tem o contexto acadêmico, o contexto de gamificação e o contexto compartilhado.
+
+Cada contexto desse tem as suas funcionalidades, os seus casos de uso, suas entidades, services, enfim, e o projeto, ele acaba ganhando uma complexidade quando seguimos por essa linha. 
+
+No módulo "academico" eu tenho esse pacote "aplicacao", tenho esse outro "indicacao", aqui outro "dominio".
+
+Olhe o tanto de classes, pacotes de "indicação", de "infra", "aluno". 
+
+Olhe o tanto de pacotes e subpacotes, classes, interfaces, enfim, isso fora as classes de teste. 
+
+Isso porque a nossa aplicação não tem quase nada, só tem a parte de matricular, de indicar e de gerar selo. 
+
+**Esse tipo de arquitetura, ele tende a ser mais complexo olhando por esse ponto de vista**. 
+
+Eu começo a ter muitos pacotes, muitas classes, muitas separações.
+
+Então **nem todo projeto faz sentido você utilizar esses tipos de conceitos do Domain Driven Design e implementar dessa maneira**. 
+
+Se o seu sistema é um CRUD, aquele cadastro simples que no máximo tem uma validação de formulário, não faz sentido você seguir essa linha, fazer essa separação de camadas, de contextos, da maneira que estamos fazendo aqui no treinamento.
+
+**Você acaba não ganhando, você acaba dificultando mais ainda**. 
+
+Esse tipo de abordagem é mais para projetos muito grande, muito complexos, que tenham um contexto, um domínio que é muito complicado, com muitas informações, muitas regras e tal. 
+
+Então isso, essa separação, ela acaba favorecendo você manter e principalmente estender, adicionar novas funcionalidades.
+
+Então nem todo projeto fará sentido você usar esse tipo de abordagem, esse tipo de arquitetura, esses conceitos do Domain Driven Design, que são um pouco mais avançados. 
+
+Eu até costumo dizer também que eu, particularmente, eu enxergo esse tipo de projeto é para uma equipe mais sênior.
+
+Se você tem uma equipe que tem muitas pessoas iniciantes, mais no nível júnior, talvez elas tenham dificuldade, elas não vão conseguir sair sozinhas do outro lado, elas vão se perder e ter dificuldade em como fazer essas separações, vão ferir as regras de contexto, por exemplo, enfim, são coisas mais avançadas.
+
+Outra coisa que eu quero discutir com vocês é como isso pode evoluir. 
+
+cada contexto desses futuramente pode ser separado em um projeto a parte. 
+
+Isso é bem comum hoje em dia, principalmente para projetos que utilizam aquela arquitetura de microsserviços.
+
+Então é muito provável que, posteriormente, comece a aumentar, comece a ter uma dificuldade, problemas de performance, o seu time, ele já não está mais dando conta de dar manutenção, você quer quebrar em times separados e, para não ficar todo mundo trabalhando no mesmo projeto, no mesmo repositório, vai ser como você separar cada contexto desse em um microsserviço, em um projeto a parte.
+
+Provavelmente isso vai acontecer no futuro, à medida que o projeto vai crescendo, crescendo, crescendo, vai haver essa necessidade e, lá na frente, é comum que o contexto acadêmico vire um projeto separado, um projeto acadêmico, o contexto de gamificação vire projeto separado, vire um microsserviço separado de gamificação.
+
+Isso é interessante, porque você pode ter projetos distintos, cada projeto pode ter um time de desenvolvimento distinto com pessoas distintas, cada projeto pode utilizar tecnologias distintas. 
+
+Você não precisa ter aquele projeto gigantesco, que está amarrado em uma mesma tecnologia e que você não consegue evoluir, senão vai gerar um impacto muito grande no projeto inteiro.
+
+Então cada projeto pode ter times e tecnologias distintas, você consegue favorecer também a questão de escalabilidade. 
+
+Você pode, sei lá, o módulo acadêmico é provável que ele seja muito mais utilizado e muito mais crítico do que o módulo de gamificação, então você pode ter servidores mais parrudos, com mais memória, enfim, do que no módulo de gamificação.
+
+Se o módulo acadêmico cair, isso pode gerar um impacto, você pode ter um tratamento. 
+
+O de gamificação não gera tanto impacto assim, ao meu ver, então você pode ter outro tipo de tratamento. 
+
+Começa a favorecer esse tipo de coisa. 
+
+Mas tudo isso faz muito sentido para projetos complexos, projetos que você quer evoluir de maneira simples e projetos que você quer fazer essa separação, que essa separação, ela vai ser natural no futuro.
+
+Para projetos pequenos, CRUDs, cadastros, talvez não faça muito sentido. 
+
+E, se você faz essa separação entre projetos distintos, você vai cair em um outro mundo, um outro universo de problemas que também pode acontecer, que é o mundo de programação distribuída.
+
+Não é o foco aqui do treinamento discutir sobre programação distribuída e implementar a programação distribuída, porque isso é um outro universo, daria para ter vários treinamentos sobre isso. 
+
+Mas aqui a ideia é: se você separa em projetos distintos, você vai ter que fazer comunicação entre sistemas, vai ser uma comunicação distribuída. 
+
+A partir desse momento, que você tem projetos distintos, a comunicação entre os contextos, ela vai mudar um pouco, ela não vai ser igual estamos fazendo nesse projeto.
+
+Temos esse pacote "shared" e uma classe conversa com a outra pelo pacote "shared". 
+
+A partir do momento que você distribuir as aplicações, a comunicação entre contextos também vai ser distribuída e isso aumenta um pouco a complexidade. 
+
+Então tem vantagens, mas também tem desvantagens.
+
+É mais difícil, é mais complexo e outros problemas podem surgir. 
+
+### Camada Anticorrupção
+haviamos comentado sobre aquela questão de complexidade, sobre como o nosso projeto poderia evoluir para uma arquitetura com cada contexto sendo separado em uma aplicação, em um microsserviço. 
+
+Com isso, você acaba criando essa arquitetura distribuída, com vários projetos fazendo integração entre si. 
+
+E algumas coisas podem acontecer, algumas mudanças serão necessárias.
+
+![](https://github.com/luizClaudioMendes/DDD-domain_driven_design/blob/main/images/7.PNG)
+
+Diagrama começando com o elemento "Publisher", conectado ao elemento "Message Broker" por uma seta tracejada com um ícone de carta. Este último elemento por sua vez se conecta da mesma forma a "Subscriber 1", a "Subscriber 2" e a "Subscriber X". Há uma reticências entre estes dois últimos elementos.
+
+Eu tenho uma imagem aqui, uma das maneiras de você fazer isso. 
+
+Utilizando um sistema de mensageria, por exemplo, no caso do Java tem o tal do JMS, aquela especificação que suporta esse tipo de integração. 
+
+Então de um lado você tem um publisher, que é quem está enviando uma mensagem, disparando um evento.
+
+Aqui poderia ser, por exemplo, o nosso sistema acadêmico, o contexto acadêmico que seria um sistema separado. 
+
+Sempre que um aluno é matriculado, ele envia uma mensagem para um message broker, para o servidor de mensageria, para alguém que estará centralizando essas mensagens.
+
+Do outro lado, você ter um ou mais subscribers, que são pessoas, sistemas interessados em receber aquela mensagem e serem notificados quando aquele evento, aquela mensagem for encaminhada. 
+
+Então, por exemplo, esse subscriber seria o nosso módulo de gamificação. 
+
+No nosso sistema, o contexto extrai ele para uma aplicação de gamificação.
+
+Então sempre que um aluno for matriculado, o sistema acadêmico envia uma mensagem para um servidor de mensageria e o sistema de gamificação, ele vai ser notificado, ele vai consumir essa mensagem e fazer algum tratamento. 
+
+E eu posso ter outros sistemas interessados nessa mensagem.
+
+Por exemplo, o sistema financeiro: sempre que um aluno foi matriculado, o sistema financeiro também estará interessado nesse evento. 
+
+Ele vai ler essa mensagem, vai puxar o CPF do aluno para gerar uma nota fiscal. 
+
+Um outro sistema aqui vai enviar um e-mail de boas-vindas, enfim, esse é um tipo de arquitetura bem comum, um tipo de solução bem comum para esse tipo de arquitetura, você ter um sistema de mensageria.
+
+Aqui a ideia é justamente essa, nesse tipo de arquitetura, nesse tipo de tecnologia, você consegue fazer a separação, separar cada aplicação uma da outra, sem que elas conversem diretamente entre si, criando aquele acoplamento, aquele problema que se uma evoluir, gera impacto na outra.
+
+Desse jeito uma aplicação não conversa diretamente com a outra, elas tem esse message broker, esse sistema de mensageria aqui no meio. 
+
+Então uma aplicação executou alguma coisa, ela manda uma mensagem e ela não sabe quem vai ler a mensagem, qual que vai ser o tratamento, quantos outros sistemas vão ler e o que vão fazer.
+
+Da mesma maneira, o sistema que está recebendo a mensagem, ele também não sabe se tem outros ouvintes para essa mensagem, quem está mandando essa mensagem, então um sistema evolui totalmente separado do outro. 
+
+De novo, podem ser aplicações distintas, com times distintos, tecnologias distintas, bancos de dados distintos.
+
+Você tem um monte de vantagens. 
+
+Você só tem algumas outras dificuldades e problemas. 
+
+Se esse sistema cair, esse sistema de mensageria cair ou se o outro sistema não receber essa notificação, enfim, são outros problemas e outros assuntos mais complexos, que fogem do escopo deste treinamento.
+
+É só para mostrar para vocês uma visão. 
+
+Nesse tipo de abordagem, mais ainda você tem que ter aquela preocupação de manter a separação entre os contextos, manter essa separação entre os sistemas, para não criar um acoplamento forte, uma dependência que pode dificultar a manutenção.
+
+https://github.com/luizClaudioMendes/DDD-domain_driven_design/blob/main/images/8.PNG
+
+Zoom de parte da mesma imagem apresentada primeiro no terceiro vídeo da aula quatro. Nesta ampliação, é exibido a intersecção de nome "Shared Kernel" ao lado do elemento "Orders" que se conecta ao adendo "Anti Corruption Layer".
+
+Então voltei para aquela imagem que eu tinha mostrado pra vocês em alguma aula atrás. 
+
+Nessa imagem, que mostrava um mapa de contextos, se dermos um zoom, vou mostrar para vocês. 
+
+Aqui, no canto, nós temos essa camada rosa, que é o anti corruption layer, uma camada de anticorrupção.
+
+Ela está separando o sistema de shipping, o sistema de envios, de frete, do sistema de pedidos e de produtos. 
+
+Essa camada seria aquele sistema de mensageria, então provavelmente você vai ter algumas classes compartilhadas, uma classe que terá que fazer a ponte entre uma informação que vem de um sistema para uma informação do outro sistema.
+
+Um exemplo, no nosso caso, seria a classe CPF. 
+
+A classe CPF, ela poderia ser compartilhada entre esses dois sistemas. 
+
+Você poderia ter uma classe que faz uma conversão, recebe uma informação de um lado, converte para uma informação que é entendida pelo outro lado.
+
+Ou essa camada pode até ser um sistema inteiro, separado, enfim. 
+
+Então essa camada anticorrupção, o objetivo dela é justamente esse, evitar que você gere um acoplamento, que você gere esse acoplamento entre os vários sistemas, o que pode causar uma dificuldade de manutenção e de evolução.
+
+Então essas são algumas considerações importantes que você precisa ter em relação a sistemas distribuídos. 
+
+Perceba que agora já estamos indo mais para um lado de arquitetura, um lado que é um pouco mais complexo, então não dá para eu ensinar isso para vocês aqui e nem é o objetivo.
+
+Tem um monte de cursos, de treinamentos, e de referências bibliográficas sobre sistemas distribuídos, arquitetura de microsserviços, enfim, é um outro universo gigantesco. 
+
+### Para saber mais: Referências
+* O livro que originou o termo DDD: https://www.amazon.com.br/Domain-Driven-Design-Eric-Evans/dp/8550800651/
+* Uma releitura com uma linguagem um pouco mais palatável: https://www.amazon.com.br/Implementando-Domain-Driven-design-Vernon/dp/8576089521/
+* Um livro prático sobre implementação em Java com SpringBoot de conceitos do DDD: https://www.amazon.com.br/Domain-Driven-Design-Spring-Boot-ebook/dp/B07K5W7CTZ
+
+Há ainda diversos canais do YouTube, blogs e sites que falam sobre DDD. Vale a pena a pesquisa.
+
+### O que aprendemos?
+* Conversamos sobre o que é um sistema distribuído;
+* Vimos que através de contextos delimitados podemos distribuir sistemas realmente complexos;
+* No caso de sistemas distribuídos, falamos que há a necessidade de uma camada anti-corrupção;
+* Vimos algumas referências para nos aprofundar no assunto de DDD.
